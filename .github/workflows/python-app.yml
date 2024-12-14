@@ -34,7 +34,11 @@ jobs:
         uses: snok/install-poetry@v1.3.4
       - name: Install dependencies
         run: |
-          poetry install --no-root
+            if [ $RUNNER_OS = 'Windows' ]; then
+              # Ensure psycopg2-binary is installed on Windows to avoid compilation issues
+              poetry add psycopg2-binary
+            fi
+            poetry install --no-root
 
   lint:
     runs-on: ${{ matrix.os }}
