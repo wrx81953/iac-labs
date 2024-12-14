@@ -1,3 +1,6 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
 name: Python application
 
 on:
@@ -10,36 +13,112 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  # Instalacja zależności
+  install_dependencies:
     runs-on: ubuntu-latest
-
-    defaults:
-      run:
-        working-directory: ./example-app
+    concurrency:
+      group: install-dependencies-${{ github.ref }}
+      cancel-in-progress: true
 
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python 3.13
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.13"
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.13"
+      
+      # Pamięć podręczna dla zależności
+      - name: Cache build venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+        
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
 
-    - name: Install Poetry
-      uses: snok/install-poetry@v1
+      - name: Install project dependencies
+        run: |
+          poetry install --no-root
 
-    - name: Install dependencies using Poetry
-      run: |
-        poetry install --no-root
-    
-    - name: Run unit tests
-      run: poetry run task test
-    
-    - name: Run linting (pylint)
-      run: poetry run task lint
+  # Testy statyczne kodu (linters, formattery, security)
+  static_code_tests:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: static-code-tests-${{ github.ref }}
+      cancel-in-progress: true
 
-    - name: Run code formatting check (black)
-      run: poetry run task formatter
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.13"
 
-    - name: Run security tests (bandit)
-      run: poetry run task security
+      # Pamięć podręczna dla zależności
+      - name: Cache build venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Install project dependencies
+        run: |
+          poetry install --no-root
+
+      - name: Run linter
+        run: |
+          poetry run task lint
+
+      - name: Run formatter
+        run: |
+          poetry run task formatter
+
+      - name: Run security checks
+        run: |
+          poetry run task security
+
+  # Testy jednostkowe
+  unit_tests:
+    runs-on: ubuntu-latest
+    concurrency:
+      group: unit-tests-${{ github.ref }}
+      cancel-in-progress: true
+    needs: install_dependencies  
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.13"
+
+      # Pamięć podręczna dla zależności
+      - name: Cache build venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-poetry-
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Install project dependencies
+        run: |
+          poetry install --no-root
+
+      - name: Run unit tests
+        run: |
+          poetry run task test
