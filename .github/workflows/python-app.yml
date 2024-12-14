@@ -16,10 +16,9 @@ permissions:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
-    matrix:
-      os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
-
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
     defaults:
       run:
         shell: bash  # Use bash shell even for Windows
@@ -36,12 +35,12 @@ jobs:
         run: |
           poetry install --no-root
 
-  lint: 
+  lint:
     runs-on: ${{ matrix.os }}
     needs: build
-
-    matrix:
-      os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
 
     defaults:
       run:
@@ -65,9 +64,9 @@ jobs:
   formatter:
     runs-on: ${{ matrix.os }}
     needs: build
-
-    matrix:
-      os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
 
     defaults:
       run:
@@ -91,9 +90,9 @@ jobs:
   security:
     runs-on: ${{ matrix.os }}
     needs: build
-
-    matrix:
-      os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
 
     defaults:
       run:
@@ -117,9 +116,9 @@ jobs:
   unitests:
     runs-on: ${{ matrix.os }}
     needs: [lint, formatter, security]
-
-    matrix:
-      os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
 
     defaults:
       run:
