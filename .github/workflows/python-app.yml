@@ -41,6 +41,7 @@ jobs:
 
       - name: Install project dependencies
         run: |
+          cd example-app
           poetry install --no-root
 
   # Testy statyczne kodu
@@ -73,18 +74,22 @@ jobs:
 
       - name: Install project dependencies
         run: |
+          cd example-app
           poetry install --no-root
 
       - name: Run linter
         run: |
+          cd example-app
           poetry run task lint
 
       - name: Run formatter
         run: |
+          cd example-app
           poetry run task formatter
 
       - name: Run security checks
         run: |
+          cd example-app
           poetry run task security
 
   # Testy jednostkowe
@@ -117,8 +122,10 @@ jobs:
 
       - name: Install project dependencies
         run: |
+          cd example-app  
           poetry install --no-root
 
       - name: Run unit tests
         run: |
+          cd example-app  
           poetry run task test
