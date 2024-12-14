@@ -131,7 +131,7 @@ jobs:
     defaults:
       run:
         working-directory: ./example-app
-        shell: bash  # Use bash shell even for Windows
+        shell: bash  
 
     steps:
       - uses: actions/checkout@v4
