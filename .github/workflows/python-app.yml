@@ -13,12 +13,16 @@ permissions:
   contents: read
 
 jobs:
+  # Job responsible for installing dependencies
   build:
     runs-on: ubuntu-latest
+    concurrency:
+      group: build-${{ github.ref }}
+      cancel-in-progress: true
 
     defaults:
       run:
-        working-directory: ./example-app
+        working-directory: ./example-app  # Work in example-app directory
 
     steps:
       - uses: actions/checkout@v4
@@ -27,14 +31,29 @@ jobs:
         with:
           python-version: "3.13"
       - name: Install Poetry Action
-        uses: snok/install-poetry@v1.3.4
+        uses: snok/install-poetry@v1.3.4  # Install Poetry dependency manager
       - name: Install dependencies
         run: |
-          poetry install --no-root
+          poetry install --no-root  # Install project dependencies without installing the current package
 
+      # Caching the virtual environment to speed up future runs
+      - name: Cache build venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-  # Restore from previous caches if exact match is not found
+
+  # Job responsible for running static code analysis (linter, formatter, security)
   lint:
     runs-on: ubuntu-latest
-    needs: build 
+    needs: build
+
+    concurrency:
+      group: lint-${{ github.ref }}
+      cancel-in-progress: true
 
     defaults:
       run:
@@ -50,15 +69,30 @@ jobs:
         uses: snok/install-poetry@v1.3.4
       - name: Install dependencies
         run: |
-          poetry install --no-root
+          poetry install --no-root  # Install dependencies again for this job
       - name: Lint with poetry
         run: |
-          poetry run task lint
+          poetry run task lint  # Run linter to analyze code quality
 
+      # Caching dependencies to improve performance of future runs
+      - name: Cache build venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-
+
+  # Job responsible for formatting code
   formatter:
     runs-on: ubuntu-latest
     needs: build
 
+    concurrency:
+      group: formatter-${{ github.ref }}
+      cancel-in-progress: true
+
     defaults:
       run:
         working-directory: ./example-app
@@ -73,15 +107,30 @@ jobs:
         uses: snok/install-poetry@v1.3.4
       - name: Install dependencies
         run: |
-          poetry install --no-root
+          poetry install --no-root  # Install dependencies
       - name: Format with poetry
         run: |
-          poetry run task formatter
+          poetry run task formatter  # Run code formatter
 
+      # Caching the virtual environment to speed up future runs
+      - name: Cache build venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-
+
+  # Job responsible for running security checks
   security:
     runs-on: ubuntu-latest
     needs: build
 
+    concurrency:
+      group: security-${{ github.ref }}
+      cancel-in-progress: true
+
     defaults:
       run:
         working-directory: ./example-app
@@ -96,15 +145,30 @@ jobs:
         uses: snok/install-poetry@v1.3.4
       - name: Install dependencies
         run: |
-          poetry install --no-root
+          poetry install --no-root  # Install dependencies
       - name: Security with poetry
         run: |
-          poetry run task security
+          poetry run task security  # Run security checks
 
-  unitests:
+      # Caching the virtual environment to speed up future runs
+      - name: Cache build venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-
+
+  # Job responsible for running unit tests
+  unittests:
     runs-on: ubuntu-latest
     needs: [lint, formatter, security]
 
+    concurrency:
+      group: unittests-${{ github.ref }}
+      cancel-in-progress: true
+
     defaults:
       run:
         working-directory: ./example-app
@@ -119,7 +183,17 @@ jobs:
         uses: snok/install-poetry@v1.3.4
       - name: Install dependencies
         run: |
-          poetry install --no-root
+          poetry install --no-root  # Install dependencies
       - name: Unit test with poetry
         run: |
-          poetry run task test
+          poetry run task test  # Run unit tests
+
+      # Caching the virtual environment to speed up future runs
+      - name: Cache build venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: ./example-app/.venv
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-
