@@ -21,6 +21,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]  # Test on both Ubuntu and Windows
     defaults:
       run:
+        working-directory: ./example-app
         shell: bash  # Use bash shell even for Windows
 
     steps:
@@ -44,6 +45,7 @@ jobs:
 
     defaults:
       run:
+        working-directory: ./example-app
         shell: bash  # Use bash shell even for Windows
 
     steps:
@@ -70,6 +72,7 @@ jobs:
 
     defaults:
       run:
+        working-directory: ./example-app
         shell: bash  # Use bash shell even for Windows
 
     steps:
@@ -96,6 +99,7 @@ jobs:
 
     defaults:
       run:
+        working-directory: ./example-app
         shell: bash  # Use bash shell even for Windows
 
     steps:
@@ -122,6 +126,7 @@ jobs:
 
     defaults:
       run:
+        working-directory: ./example-app
         shell: bash  # Use bash shell even for Windows
 
     steps:
