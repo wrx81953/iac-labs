@@ -37,3 +37,5 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+    - name: Install Poetry
+      uses: snok/install-poetry@v1
